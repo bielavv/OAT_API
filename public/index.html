@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pokémon & Hora de Aventura</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1>Pokémon & Hora de Aventura</h1>
+  
+  <section class="search-section">
+    <h2>Buscar das APIs Externas</h2>
+    
+    <div class="search-controls">
+      <div class="form-group">
+        <label for="apiUniverseSearch">Universo:</label>
+        <select id="apiUniverseSearch">
+          <option value="">Selecione...</option>
+          <option value="aventura">Hora de Aventura</option>
+          <option value="pokemon">Pokémon</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label for="characterSelect">Personagem:</label>
+        <select id="characterSelect" disabled>
+          <option value="">Primeiro selecione um universo</option>
+        </select>
+      </div>
+      
+      <button type="button" id="loadFromAPIButton" style="background: #28a745;">
+        Carregar no Formulário
+      </button>
+    </div>
+    
+    <div id="apiStatus" class="api-status" style="display: none;"></div>
+  </section>
+
+  <section class="form-section">
+    <h2>Criar / Editar Personagem</h2>
+    <form id="itemForm">
+      <input type="hidden" id="itemId" />
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label for="universe">Universo:</label>
+          <select id="universe">
+            <option value="">Selecione...</option>
+            <option value="aventura">Hora de Aventura</option>
+            <option value="pokemon">Pokémon</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="species">Espécie:</label>
+          <input type="text" id="species" placeholder="Humano, Pokémon, Robô...">
+        </div>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label for="title">Nome do Personagem:</label>
+          <input type="text" id="title" placeholder="Ex: Finn, Pikachu..." required />
+        </div>
+        
+        <div class="form-group">
+          <label for="imageUrl">URL da Imagem:</label>
+          <input type="url" id="imageUrl" placeholder="https://exemplo.com/imagem.jpg">
+          <small style="color: #666;">Cole a URL de uma imagem da web</small>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label for="body">Descrição:</label>
+        <input type="text" id="body" placeholder="Ex: Aventureiro corajoso, Pokémon elétrico..." />
+      </div> <br>
+      
+      <div class="form-group">
+        <label for="abilities">Habilidades (separadas por vírgula):</label>
+        <input type="text" id="abilities" placeholder="Ex: Choque do Trovão, Espada, Magia...">
+      </div><br>
+      
+<button type="submit" id="submitButton" disabled>Salvar Personagem</button>
+<button type="button" onclick="resetForm()" style="background: #6c757d; margin-left: 10px;">Cancelar</button>
+    </form>
+  </section>
+
+  <section class="list-section">
+    <h2>Personagens Cadastrados</h2>
+    <table id="itemsTable">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Personagem</th>
+          <th>Universo</th>
+          <th>Espécie</th>
+          <th>Descrição</th>
+          <th>Habilidades</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <section class="story-section">
+    <h2>Criar História Cruzada</h2>
+    
+    <div class="character-selection">
+      <div class="selection-group">
+        <label for="char1">Personagem 1:</label>
+        <select id="char1">
+          <option value="">Selecione o primeiro personagem</option>
+        </select>
+      </div>
+      
+      <div class="selection-group">
+        <label for="char2">Personagem 2:</label>
+        <select id="char2">
+          <option value="">Selecione o segundo personagem</option>
+        </select>
+      </div>
+    </div>
+    
+    <button class="story-button" id="generateStoryButton">Criar História Mágica</button>
+    
+    <div id="storyResult" class="story-result">
+      <div class="story-content" id="storyContent"></div>
+      <div class="story-characters" id="storyChars"></div>
+    </div>
+  </section>
+
+  <div id="warningModal" class="modal">
+    <div class="modal-content">
+      <p id="modalMessage"></p>
+      <button onclick="closeModal()" style="margin-top: 15px; padding: 8px 15px;">Fechar</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
