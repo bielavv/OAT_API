@@ -270,7 +270,7 @@ function editCharacter(id) {
         
         document.querySelector('.form-section').scrollIntoView({ behavior: 'smooth' });
         
-        showModal('Editando personagem existente. Você pode modificar espécie, imagem e habilidades.');
+         showModal('Editando personagem existente. Agora você pode modificar todos os campos.');
     }
 }
 
@@ -313,9 +313,7 @@ function renderCharacters() {
                          onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">`;
         }
         
-        // Fallback sempre disponível (mas escondido inicialmente se tiver imagem)
-        const fallbackEmoji = getUniverseEmoji(character.universe);
-        const fallbackHtml = `<div class="table-image-fallback" style="${character.imageUrl ? 'display: none;' : ''}">${fallbackEmoji}</div>`;
+        const fallbackHtml = `<div class="table-image-fallback" style="${character.imageUrl ? 'display: none;' : ''}">?</div>`;
         
         tr.innerHTML = `
             <td>${character.id}</td>
@@ -391,21 +389,20 @@ async function generateStory() {
     storyContent.innerHTML = `<div class="story-text">${story}</div>`;
 
     storyChars.innerHTML = `
-      <div class="character-card">
-        <div class="character-emoji">${getUniverseEmoji(char1.universe)}</div>
-        ${char1.imageUrl ? `<img src="${char1.imageUrl}" class="story-image" alt="${char1.title}">` : ''}
-        <h4>${char1.title}</h4>
-        <small>${char1.universe || 'Universo desconhecido'}</small>
-        <div class="character-species">${char1.species || 'Espécie desconhecida'}</div>
-      </div>
-      <div class="character-card">
-        <div class="character-emoji">${getUniverseEmoji(char2.universe)}</div>
-        ${char2.imageUrl ? `<img src="${char2.imageUrl}" class="story-image" alt="${char2.title}">` : ''}
-        <h4>${char2.title}</h4>
-        <small>${char2.universe || 'Universo desconhecido'}</small>
-        <div class="character-species">${char2.species || 'Espécie desconhecida'}</div>
-      </div>
-    `;
+  <div class="character-card">
+    ${char1.imageUrl ? `<img src="${char1.imageUrl}" class="story-image" alt="${char1.title}">` : ''}
+    <h4>${char1.title}</h4>
+    <small>${char1.universe || 'Universo desconhecido'}</small>
+    <div class="character-species">${char1.species || 'Espécie desconhecida'}</div>
+  </div>
+  <div class="character-card">
+    ${char2.imageUrl ? `<img src="${char2.imageUrl}" class="story-image" alt="${char2.title}">` : ''}
+    <h4>${char2.title}</h4>
+    <small>${char2.universe || 'Universo desconhecido'}</small>
+    <div class="character-species">${char2.species || 'Espécie desconhecida'}</div>
+  </div>
+`;
+
   }, 1500);
 }
 
@@ -413,18 +410,15 @@ function generateStoryWithAI(char1, char2) {
   const stories = [
     `Em uma jornada épica, ${char1.title} e ${char2.title} se uniram para enfrentar um desafio incrível. ${char1.title} trouxe suas habilidades únicas enquanto ${char2.title} contribuiu com sua coragem inabalável. Juntos, eles provaram que a amizade pode superar qualquer obstáculo!`,
     `Quando dimensões colidiram, ${char1.title} foi transportado para o mundo de ${char2.title}. Inicialmente confusos, logo descobriram que suas diferenças os tornavam mais fortes. Uma amizade improvável nasceu, salvando ambos os universos da destruição.`,
-    `Num dia comum, ${char1.title} e ${char2.title} se encontraram por acaso. O que começou como um simples encontro transformou-se na maior aventura de suas vidas, provando que os melhores parceiros são aqueles que menos esperamos.`
+    `Num dia comum, ${char1.title} e ${char2.title} se encontraram por acaso. O que começou como um simples encontro transformou-se na maior aventura de suas vidas, provando que os melhores parceiros são aqueles que menos esperamos.`,
+    `Durante uma tempestade cósmica, os poderes de ${char1.title} e ${char2.title} se entrelaçaram criando uma conexão misteriosa. Agora, devem aprender a trabalhar juntos para controlar essa energia antes que ela consuma seus mundos.`,
+    `Um antigo mistério exigia a sabedoria de ${char1.title} e a ousadia de ${char2.title}. Enquanto desvendavam enigmas ancestrais, descobriram que suas histórias estavam conectadas por um destino escrito nas estrelas.`,
+    `Quando a paz foi ameaçada, ${char1.title} e ${char2.title} responderam ao chamado. Um com estratégia refinada, outro com instinto selvagem - juntos formaram a dupla perfeita para restaurar o equilíbrio universal.`,
+    `Num torneio interdimencional, ${char1.title} e ${char2.title} foram forçados a formar uma equipe. Rivais no início, logo perceberam que suas habilidades complementares poderiam levá-los à vitória e a uma amizade surpreendente.`,
+    `Uma profecia ancestral mencionava dois heróis de reinos distintos: ${char1.title} da terra do amanhecer e ${char2.title} do crepúsculo eterno. Unidos pelo destino, sua aliança se tornou a chave para desvendar segredos milenares.`
   ];
   
   return stories[Math.floor(Math.random() * stories.length)];
-}
-
-function getUniverseEmoji(universe) {
-  switch (universe) {
-    case 'pokemon': return '⚡';
-    case 'aventura': return '🕰️';
-    default: return '❓';
-  }
 }
 
 function showModal(message) {
@@ -442,30 +436,24 @@ function closeModal() {
 }
 
 function lockApiFields(lock) {
-    const nonEditableFields = ['universe', 'title', 'body']; // Campos que NUNCA podem ser editados
-    const editableFields = ['species', 'imageUrl', 'abilities']; // Campos que podem ser editados APÓS carregar da API
+    // REMOVER os campos que agora serão editáveis
+    const nonEditableFields = []; // Antes: ['universe', 'title', 'body']
+    const editableFields = ['universe', 'title', 'body', 'species', 'imageUrl', 'abilities']; 
     
     // Remove indicadores anteriores
     const indicators = document.querySelectorAll('.field-indicator');
     indicators.forEach(indicator => indicator.remove());
 
     if (lock) {
-        // BLOQUEIA completamente os campos não editáveis
+        // BLOQUEIA completamente os campos não editáveis (agora vazio)
         nonEditableFields.forEach(fieldId => {
             const field = document.getElementById(fieldId);
             field.setAttribute('readonly', 'true');
             field.setAttribute('disabled', 'true');
             field.classList.add('locked-field');
-            
-            // Adiciona indicador visual
-            const badge = document.createElement('small');
-            badge.className = 'field-indicator';
-            badge.style.color = '#dc3545';
-            badge.style.fontWeight = 'bold';
-            field.parentNode.appendChild(badge);
         });
 
-        // Libera os campos editáveis para modificação
+        // Libera TODOS os campos para edição
         editableFields.forEach(fieldId => {
             const field = document.getElementById(fieldId);
             field.removeAttribute('readonly');
@@ -490,4 +478,3 @@ function lockApiFields(lock) {
         document.getElementById('submitButton').disabled = true;
     }
 }
-
