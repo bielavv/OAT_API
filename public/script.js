@@ -6,11 +6,18 @@ const API_CONFIG = {
 let characters = [];
 let editingId = null;
 let currentApiCharacters = [];
+let allOptions = {
+  titles: [],
+  bodies: [],
+  abilities: [],
+  species: []
+};
 
 document.addEventListener('DOMContentLoaded', function() {
   loadCharacters();
   setupEventListeners();
   updateStoryCharacterSelects();
+  initializeFormOptions();
 });
 
 function setupEventListeners() {
@@ -24,7 +31,6 @@ function setupEventListeners() {
   // História
   document.getElementById('generateStoryButton').addEventListener('click', generateStory);
 
-  
   // Fechar modal clicando fora
   window.addEventListener('click', function(event) {
     const modal = document.getElementById('warningModal');
@@ -32,6 +38,76 @@ function setupEventListeners() {
       closeModal();
     }
   });
+}
+
+function initializeFormOptions() {
+  // Opções para Pokémon
+  const pokemonOptions = {
+    titles: ['Pikachu', 'Bulbasaur', 'Charmander', 'Squirtle', 'Jigglypuff', 'Meowth', 'Psyduck', 'Gengar', 'Eevee', 'Snorlax'],
+    bodies: [
+      'Pokémon elétrico amarelo e fofo',
+      'Pokémon do tipo planta e veneno',
+      'Pokémon do tipo fogo com chama na cauda',
+      'Pokémon do tipo água com casco',
+      'Pokémon do tipo normal e fada com voz hipnótica',
+      'Pokémon gato ganancioso que adora moedas',
+      'Pokémon pato com dores de cabeça e poderes psíquicos',
+      'Pokémon fantasma sombrio e misterioso',
+      'Pokémon com capacidade de evoluir para várias formas',
+      'Pokémon gigante e preguiçoso que adora dormir'
+    ],
+    abilities: [
+      'Static, Lightning Rod',
+      'Overgrow, Chlorophyll',
+      'Blaze, Solar Power',
+      'Torrent, Rain Dish',
+      'Cute Charm, Competitive',
+      'Pickup, Technician',
+      'Damp, Cloud Nine',
+      'Cursed Body, Levitate',
+      'Adaptability, Run Away',
+      'Immunity, Thick Fat'
+    ],
+    species: ['Pokémon']
+  };
+
+  // Opções para Hora de Aventura
+  const adventureOptions = {
+    titles: ['Finn', 'Jake', 'Princess Bubblegum', 'Marceline', 'Ice King', 'BMO', 'Lumpy Space Princess', 'Flame Princess', 'Lemongrab', 'Tree Trunks'],
+    bodies: [
+      'Herói aventureiro humano corajoso',
+      'Cachorro mágico que estica e é o melhor amigo de Finn',
+      'Princesa científica do Reino Doce feita de chiclete',
+      'Rainha dos vampiros milenar e musicista',
+      'Rei do gelo com coroa mágica e poderes congelantes',
+      'Console de videogame vivo e inteligente',
+      'Princesa do Lumpy Space com atitude dramática',
+      'Princesa do Reino do Fogo com poderes flamejantes',
+      'Conde temperamental obcecado por ordem e limão',
+      'Elefante idosa que adora fazer tortas de maçã'
+    ],
+    abilities: [
+      'Espada, Coragem, Liderança',
+      'Esticar, Magia, Transformar',
+      'Ciência, Liderança, Criação',
+      'Voo, Música, Imortalidade',
+      'Magia de Gelo, Voo, Criatura de Neve',
+      'Jogos, Computação, Armazenamento',
+      'Drama, Flutuação, Transformação',
+      'Pirocinese, Liderança, Força',
+      'Gritos, Ordem, Criar Subordinados',
+      'Culinária, Sabedoria, Persistência'
+    ],
+    species: ['Humano', 'Cachorro Mágico', 'Chiclete', 'Vampira', 'Humano Mágico', 'Console Vivo', 'Ser Espacial', 'Ser de Fogo', 'Híbrido de Limão', 'Elefante']
+  };
+
+  // COMBINA todas as opções de ambos os universos
+  allOptions = {
+    titles: [...pokemonOptions.titles, ...adventureOptions.titles],
+    bodies: [...pokemonOptions.bodies, ...adventureOptions.bodies],
+    abilities: [...pokemonOptions.abilities, ...adventureOptions.abilities],
+    species: [...pokemonOptions.species, ...adventureOptions.species]
+  };
 }
 
 async function handleUniverseChange(event) {
@@ -56,18 +132,15 @@ async function handleUniverseChange(event) {
   try {
     let characters = [];
     if (universe === 'pokemon') {
-      // LIMITADO A 10 POKÉMONS
-      const response = await fetch('https://pokeapi.co/api/v2/pokemon?limit=5');
+      const response = await fetch('https://pokeapi.co/api/v2/pokemon?limit=10');
       const data = await response.json();
       characters = data.results;
     } else if (universe === 'aventura') {
-      // API ALTERNATIVA PARA HORA DE AVENTURA
       try {
         const response = await fetch('https://api.sampleapis.com/adventuretime/characters');
         if (!response.ok) throw new Error('API não disponível');
         characters = await response.json();
       } catch (error) {
-        // Dados fixos como fallback
         characters = [
           { id: 1, name: 'Finn', species: 'Humano' },
           { id: 2, name: 'Jake', species: 'Cachorro Mágico' },
@@ -140,7 +213,6 @@ async function loadCharacterToForm() {
         description: `Pokémon do tipo ${data.types.map(t => t.type.name).join(', ')}.`
       };
     } else if (universe === 'aventura') {
-      // Dados simulados para Hora de Aventura
       const adventureCharacters = {
         '1': { name: 'Finn', species: 'Humano', image: '', abilities: 'Espada, Coragem', description: 'Herói aventureiro' },
         '2': { name: 'Jake', species: 'Cachorro Mágico', image: '', abilities: 'Esticar, Magia', description: 'Melhor amigo de Finn' },
@@ -159,14 +231,18 @@ async function loadCharacterToForm() {
     }
 
     if (characterData) {
-      mapApiCharacterToForm(characterData, universe);
-      statusDiv.className = 'api-status success';
-      statusDiv.textContent = 'Personagem carregado no formulário!';
+      // PRIMEIRO: Preenche todos os selects com TODAS as opções disponíveis
+      updateAllFormSelects();
       
-      // Auto-esconde a mensagem após 3 segundos
+      // DEPOIS: Mapeia os dados do personagem para o formulário
+      mapApiCharacterToForm(characterData, universe);
+      
+      statusDiv.className = 'api-status success';
+      statusDiv.textContent = 'Personagem carregado no formulário! Agora você pode modificar as opções.';
+      
       setTimeout(() => {
         statusDiv.style.display = 'none';
-      }, 3000);
+      }, 4000);
     }
   } catch (error) {
     statusDiv.className = 'api-status error';
@@ -176,16 +252,154 @@ async function loadCharacterToForm() {
 }
 
 function mapApiCharacterToForm(characterData, universe) {
-    // Preenche o formulário com dados da API
+    // Define o universo primeiro
     document.getElementById('universe').value = universe;
+    
+    // Define os valores nos selects (que já devem estar preenchidos com todas as opções)
     document.getElementById('species').value = characterData.species || '';
     document.getElementById('title').value = characterData.name || '';
     document.getElementById('imageUrl').value = characterData.image || '';
     document.getElementById('body').value = characterData.description || '';
     document.getElementById('abilities').value = characterData.abilities || '';
 
-    // BLOQUEIA campos principais e HABILITA salvamento
     lockApiFields(true);
+}
+
+function updateAllFormSelects(characterData = null) {
+  // Atualiza todos os selects com TODAS as opções disponíveis (de todos os universos)
+  // E pré-seleciona os valores atuais se characterData for fornecido
+  updateSelectOptions('title', allOptions.titles, characterData ? characterData.name : '');
+  updateSelectOptions('body', allOptions.bodies, characterData ? characterData.description : '');
+  updateSelectOptions('abilities', allOptions.abilities, characterData ? characterData.abilities : '');
+  updateSelectOptions('species', allOptions.species, characterData ? characterData.species : '');
+}
+
+function updateSelectOptions(selectId, options, currentValue = '') {
+  const select = document.getElementById(selectId);
+  const hasCurrentValue = options.includes(currentValue);
+  
+  select.innerHTML = '<option value="">Selecione...</option>';
+  
+  options.forEach(option => {
+    const optionElement = document.createElement('option');
+    optionElement.value = option;
+    optionElement.textContent = option;
+    
+    // Seleciona a opção se for o valor atual
+    if (option === currentValue) {
+      optionElement.selected = true;
+    }
+    
+    select.appendChild(optionElement);
+  });
+  
+  // Se o valor atual não está nas opções, mas existe, adiciona como uma opção extra
+  if (currentValue && !hasCurrentValue && currentValue !== '') {
+    const optionElement = document.createElement('option');
+    optionElement.value = currentValue;
+    optionElement.textContent = `${currentValue} `;
+    optionElement.selected = true;
+    select.appendChild(optionElement);
+  }
+}
+
+async function loadCharacterToForm() {
+  const universe = document.getElementById('apiUniverseSearch').value;
+  const characterSelect = document.getElementById('characterSelect');
+  const characterId = characterSelect.value;
+  const statusDiv = document.getElementById('apiStatus');
+
+  if (!universe || !characterId) {
+    showModal('Por favor, selecione um universo e um personagem.');
+    return;
+  }
+
+  statusDiv.style.display = 'block';
+  statusDiv.className = 'api-status loading';
+  statusDiv.textContent = 'Carregando detalhes do personagem...';
+
+  try {
+    let characterData;
+    if (universe === 'pokemon') {
+      const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${characterId}`);
+      const data = await response.json();
+      
+      characterData = {
+        name: data.name.charAt(0).toUpperCase() + data.name.slice(1),
+        species: 'Pokémon',
+        image: data.sprites.front_default,
+        abilities: data.abilities.map(a => a.ability.name).join(', '),
+        description: `Pokémon do tipo ${data.types.map(t => t.type.name).join(', ')}.`
+      };
+    } else if (universe === 'aventura') {
+      const adventureCharacters = {
+        '1': { name: 'Finn', species: 'Humano', image: '', abilities: 'Espada, Coragem', description: 'Herói aventureiro' },
+        '2': { name: 'Jake', species: 'Cachorro Mágico', image: '', abilities: 'Esticar, Magia', description: 'Melhor amigo de Finn' },
+        '3': { name: 'Princess Bubblegum', species: 'Chiclete', image: '', abilities: 'Ciência, Liderança', description: 'Princesa do Reino Doce' },
+        '4': { name: 'Marceline', species: 'Vampira', image: '', abilities: 'Voo, Música', description: 'Rainha dos Vampiros' },
+        '5': { name: 'Ice King', species: 'Humano', image: '', abilities: 'Magia de Gelo', description: 'Rei do Gelo' }
+      };
+      
+      characterData = adventureCharacters[characterId] || {
+        name: 'Personagem Desconhecido',
+        species: 'Desconhecida',
+        image: '',
+        abilities: 'Desconhecidas',
+        description: 'Personagem de Hora de Aventura'
+      };
+    }
+
+    if (characterData) {
+      // PRIMEIRO: Preenche todos os selects com TODAS as opções disponíveis E pré-seleciona os valores atuais
+      updateAllFormSelects(characterData);
+      
+      // DEPOIS: Define o universo e outros campos
+      document.getElementById('universe').value = universe;
+      document.getElementById('imageUrl').value = characterData.image || '';
+      
+      lockApiFields(true);
+      
+      statusDiv.className = 'api-status success';
+      statusDiv.textContent = 'Personagem carregado no formulário! Agora você pode modificar as opções.';
+      
+      setTimeout(() => {
+        statusDiv.style.display = 'none';
+      }, 4000);
+    }
+  } catch (error) {
+    statusDiv.className = 'api-status error';
+    statusDiv.textContent = 'Erro ao carregar detalhes do personagem.';
+    console.error('Erro ao carregar detalhes:', error);
+  }
+}
+
+function updateSelectOptions(selectId, options, currentValue = '') {
+  const select = document.getElementById(selectId);
+  const hasCurrentValue = options.includes(currentValue);
+  
+  select.innerHTML = '<option value="">Selecione...</option>';
+  
+  options.forEach(option => {
+    const optionElement = document.createElement('option');
+    optionElement.value = option;
+    optionElement.textContent = option;
+    
+    // Seleciona a opção se for o valor atual
+    if (option === currentValue) {
+      optionElement.selected = true;
+    }
+    
+    select.appendChild(optionElement);
+  });
+  
+  // Se o valor atual não está nas opções, mas existe, adiciona como uma opção extra
+  if (currentValue && !hasCurrentValue && currentValue !== '') {
+    const optionElement = document.createElement('option');
+    optionElement.value = currentValue;
+    optionElement.textContent = `${currentValue} `;
+    optionElement.selected = true;
+    select.appendChild(optionElement);
+  }
 }
 
 async function loadCharacters() {
@@ -212,7 +426,6 @@ async function saveCharacter(event) {
         abilities: document.getElementById('abilities').value.trim()
     };
 
-    // Verificação adicional: só permite salvar se há dados básicos
     if (!character.title || !character.universe) {
         showModal('É necessário carregar um personagem da API antes de salvar.');
         return;
@@ -221,14 +434,12 @@ async function saveCharacter(event) {
     try {
         let response;
         if (editingId) {
-            // Atualizar personagem existente
             response = await fetch(`/api/items/${editingId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(character)
             });
         } else {
-            // Criar novo personagem (só possível se veio da API)
             response = await fetch('/api/items', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -256,21 +467,24 @@ async function saveCharacter(event) {
 function editCharacter(id) {
     const character = characters.find(c => c.id === id);
     if (character) {
-        // Preenche o formulário com dados existentes
+        // PRIMEIRO: Preenche todos os selects com TODAS as opções e pré-seleciona os valores atuais
+        updateAllFormSelects({
+            name: character.title,
+            description: character.body,
+            abilities: character.abilities,
+            species: character.species
+        });
+        
+        // DEPOIS: Preenche os outros campos
         document.getElementById('universe').value = character.universe || '';
-        document.getElementById('species').value = character.species || '';
-        document.getElementById('title').value = character.title || '';
         document.getElementById('imageUrl').value = character.imageUrl || '';
-        document.getElementById('body').value = character.body || '';
-        document.getElementById('abilities').value = character.abilities || '';
         editingId = id;
         
-        // Habilita edição (já que é um personagem existente do sistema)
         lockApiFields(true);
         
         document.querySelector('.form-section').scrollIntoView({ behavior: 'smooth' });
         
-         showModal('Editando personagem existente. Agora você pode modificar todos os campos.');
+        showModal('Editando personagem existente. Agora você pode modificar todos os campos.');
     }
 }
 
@@ -291,12 +505,13 @@ function resetForm() {
     document.getElementById('itemForm').reset();
     editingId = null;
     
-    // Volta para estado inicial: TUDO BLOQUEADO
-    lockApiFields(false);
+    // Limpa os selects
+    const selectIds = ['title', 'body', 'abilities', 'species'];
+    selectIds.forEach(id => {
+        document.getElementById(id).innerHTML = '<option value="">Selecione...</option>';
+    });
     
-    // Remove qualquer destaque visual
-    const formSection = document.querySelector('.form-section');
-    formSection.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
+    lockApiFields(false);
 }
 
 function renderCharacters() {
@@ -306,7 +521,6 @@ function renderCharacters() {
     characters.forEach(character => {
         const tr = document.createElement('tr');
         
-        // CORREÇÃO: Verificação melhorada da imagem
         let imageHtml = '';
         if (character.imageUrl && character.imageUrl.trim() !== '') {
             imageHtml = `<img src="${character.imageUrl}" class="table-image" alt="${character.title}" 
@@ -383,7 +597,6 @@ async function generateStory() {
   storyContent.innerHTML = '<p class="loading">Criando história mágica...</p>';
   storyChars.innerHTML = '';
 
-  // Simula carregamento
   setTimeout(() => {
     const story = generateStoryWithAI(char1, char2);
     storyContent.innerHTML = `<div class="story-text">${story}</div>`;
@@ -425,7 +638,6 @@ function showModal(message) {
   document.getElementById('modalMessage').textContent = message;
   document.getElementById('warningModal').style.display = 'flex';
   
-  // Auto-fecha após 3 segundos para mensagens de sucesso
   if (message.includes('sucesso')) {
     setTimeout(closeModal, 3000);
   }
@@ -436,24 +648,12 @@ function closeModal() {
 }
 
 function lockApiFields(lock) {
-    // REMOVER os campos que agora serão editáveis
-    const nonEditableFields = []; // Antes: ['universe', 'title', 'body']
     const editableFields = ['universe', 'title', 'body', 'species', 'imageUrl', 'abilities']; 
     
-    // Remove indicadores anteriores
     const indicators = document.querySelectorAll('.field-indicator');
     indicators.forEach(indicator => indicator.remove());
 
     if (lock) {
-        // BLOQUEIA completamente os campos não editáveis (agora vazio)
-        nonEditableFields.forEach(fieldId => {
-            const field = document.getElementById(fieldId);
-            field.setAttribute('readonly', 'true');
-            field.setAttribute('disabled', 'true');
-            field.classList.add('locked-field');
-        });
-
-        // Libera TODOS os campos para edição
         editableFields.forEach(fieldId => {
             const field = document.getElementById(fieldId);
             field.removeAttribute('readonly');
@@ -461,20 +661,16 @@ function lockApiFields(lock) {
             field.classList.remove('locked-field');
         });
 
-        // HABILITA o botão de salvar quando um personagem da API é carregado
         document.getElementById('submitButton').disabled = false;
         
     } else {
-        // DESABILITA tudo - estado inicial
-        const allFields = [...nonEditableFields, ...editableFields];
-        allFields.forEach(fieldId => {
+        editableFields.forEach(fieldId => {
             const field = document.getElementById(fieldId);
             field.setAttribute('readonly', 'true');
             field.setAttribute('disabled', 'true');
             field.classList.add('locked-field');
         });
         
-        // Desabilita o botão de salvar
         document.getElementById('submitButton').disabled = true;
     }
 }

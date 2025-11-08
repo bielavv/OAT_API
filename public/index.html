@@ -54,14 +54,18 @@
         
         <div class="form-group">
           <label for="species">Espécie:</label>
-          <input type="text" id="species" placeholder="Humano, Pokémon, Robô...">
+          <select id="species">
+            <option value="">Selecione uma espécie</option>
+          </select>
         </div>
       </div>
       
       <div class="form-row">
         <div class="form-group">
           <label for="title">Nome do Personagem:</label>
-          <input type="text" id="title" placeholder="Ex: Finn, Pikachu..." required />
+          <select id="title" required>
+            <option value="">Selecione um personagem</option>
+          </select>
         </div>
         
         <div class="form-group">
@@ -73,16 +77,20 @@
       
       <div class="form-group">
         <label for="body">Descrição:</label>
-        <input type="text" id="body" placeholder="Ex: Aventureiro corajoso, Pokémon elétrico..." />
+        <select id="body">
+          <option value="">Selecione uma descrição</option>
+        </select>
       </div> <br>
       
       <div class="form-group">
         <label for="abilities">Habilidades (separadas por vírgula):</label>
-        <input type="text" id="abilities" placeholder="Ex: Choque do Trovão, Espada, Magia...">
+        <select id="abilities">
+          <option value="">Selecione habilidades</option>
+        </select>
       </div><br>
       
-<button type="submit" id="submitButton" disabled>Salvar Personagem</button>
-<button type="button" onclick="resetForm()" style="background: #6c757d; margin-left: 10px;">Cancelar</button>
+      <button type="submit" id="submitButton" disabled>Salvar Personagem</button>
+      <button type="button" onclick="resetForm()" style="background: #6c757d; margin-left: 10px;">Cancelar</button>
     </form>
   </section>
 
